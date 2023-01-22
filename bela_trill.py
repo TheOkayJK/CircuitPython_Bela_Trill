@@ -10,7 +10,7 @@ except ImportError:
     pass
 
 __version__ = "0.0.0+auto.0"
-__repo__ = "https://github.com/stonehippo/CircuitPython_Bela_Trill.git"
+__repo__ = "https://github.com/theokayjk/CircuitPython_Bela_Trill.git"
 
 class Touch:
     def __init__(self, location = 0, size = 0) -> None:
@@ -23,7 +23,7 @@ class TrillMode:
     CENTROID = const(0)
     RAW = const(1)
     BASELINE = const(2)
-    DIFF = const(3)    
+    DIFF = const(3)
 
 # Trill device types
 _TRILL_DEVICE_NONE = const(-1)
@@ -83,7 +83,7 @@ class Trill:
     @staticmethod
     def process_centroids(data) -> list:
         return []
-    
+
     @staticmethod
     def process_centroid_bytes(l, x) -> list:
         return [l[i+1] + (l[i] << 8) for i in range(0,len(l), x)]
@@ -92,11 +92,11 @@ class Trill:
     def is_valid_address(address, first, last) -> bool:
         if address not in range(first, last + 1):
             raise ValueError("address not valid")
-    
+
     def __init__(self, i2c_bus: I2C, type=_TRILL_DEVICE_UNKNOWN, address=0xFF, mode=TrillMode.CENTROID):
         self._address = address
         self.i2c_device = i2c_device.I2CDevice(i2c_bus, address)
-        
+
         self._type, self._version = self.identify()
 
         if self._type is not type:
@@ -123,7 +123,7 @@ class Trill:
             _TRILL_DEVICE_FLEX: True,
         }
         return switch.get(self._type, False)
-    
+
     # does does ths device have two axes for sensing?
     def is_2D(self) -> bool:
         if self._mode is not TrillMode.CENTROID:
@@ -133,7 +133,7 @@ class Trill:
             _TRILL_DEVICE_SQUARE: True,
         }
         return switch.get(self._type, False)
-    
+
     # get the type of the device
     def type(self) -> str:
         switch = {
@@ -156,10 +156,10 @@ class Trill:
             TrillMode.DIFF: 'diff',
         }
         return switch.get(self._mode, 'Unknown')
-    
+
     def firmware_version(self) -> int:
         return self._version
-    
+
     def command(self, cmd, buffer_size=32) -> bytearray:
         buffer = bytearray(buffer_size)
         with self.i2c_device as trill:
@@ -180,7 +180,7 @@ class Trill:
         if to_hex:
             return hex(self._address)
         return self._address
-    
+
     # return the number of capacative channels
     def number_of_channels(self) -> int:
         switch = {
@@ -191,7 +191,7 @@ class Trill:
 
     def number_of_vertical_touches(self) -> int:
         return len(self.vertical_touches)
-    
+
     def number_of_horizontal_touches(self) -> int:
         return len(self.horizontal_touches)
 
@@ -200,13 +200,13 @@ class Trill:
         if self._type is _TRILL_DEVICE_RING and self._mode is TrillMode.CENTROID:
             return 2
         return 0
-    
+
     def prepare_data_read(self) -> None:
         cmd = bytes([_OFFSET_DATA])
         self.command(cmd, 0)
 
 
-    
+
     def read(self) -> None:
         if self._mode is not TrillMode.CENTROID:
             raise Exception("Device must be in centroid mode")
@@ -219,7 +219,7 @@ class Trill:
 
         buffer_length = buffer_size_switch.get(self._type, _CENTROID_LENGTH_DEFAULT)
         buffer = bytearray(buffer_length)
-        
+
         self.prepare_data_read()
 
         with self.i2c_device as trill:
@@ -268,7 +268,7 @@ class Trill:
         cmd = bytes([_OFFSET_CMD, _CMD_MODE, mode])
         self.command(cmd, 0)
         self._mode = mode
-    
+
     def set_scan_settings(self, speed, bits) -> None:
         if speed > 3:
             speed =3
@@ -315,7 +315,7 @@ class Bar(Trill):
             super().__init__(i2c_bus, type=_TRILL_DEVICE_BAR, address=address, mode=mode)
         except ValueError:
             raise RuntimeError("Address must be from 0x20 to 0x28 for Trill Bar")
-    
+
 class Square(Trill):
     def __init__(self, i2c_bus: I2C, address=0x28, mode=TrillMode.CENTROID):
         try:
@@ -323,7 +323,7 @@ class Square(Trill):
             super().__init__(i2c_bus, type=_TRILL_DEVICE_SQUARE, address=address, mode=mode)
         except:
             raise RuntimeError("Address must be from 0x28 to 0x30 for Trill Square")
-    
+
 class Craft(Trill):
     def __init__(self,i2c_bus: I2C, address=0x30, mode=TrillMode.DIFF):
         try:
@@ -331,7 +331,7 @@ class Craft(Trill):
             super().__init__(i2c_bus, type=_TRILL_DEVICE_CRAFT, address=address, mode=mode)
         except:
             raise RuntimeError("Address must be from 0x30 to 0x38 for Trill Craft")
-    
+
 class Ring(Trill):
     def __init__(self, i2c_bus: I2C, address=0x38, mode=TrillMode.CENTROID):
         try:
@@ -339,7 +339,7 @@ class Ring(Trill):
             super().__init__(i2c_bus, type=_TRILL_DEVICE_RING, address=address, mode=mode)
         except:
             raise RuntimeError("Address must be from 0x38 to 0x41 for Trill Ring")
-    
+
 class Hex(Trill):
     def __init__(self, i2c_bus: I2C, address=0x40, mode=TrillMode.CENTROID):
         try:
@@ -347,7 +347,7 @@ class Hex(Trill):
             super().__init__(i2c_bus, type=_TRILL_DEVICE_HEX, address=address, mode=mode)
         except:
             raise RuntimeError("Address must be from 0x40 to 0x48 for Trill Hex")
-    
+
 class Flex(Trill):
     def __init__(self, i2c_bus: I2C, address=0x48, mode=TrillMode.DIFF):
         try:
@@ -355,5 +355,4 @@ class Flex(Trill):
             super().__init__(i2c_bus, type=_TRILL_DEVICE_FLEX, address=address, mode=mode)
         except:
             raise RuntimeError("Address must be from 0x48 to 0x50 for Trill Flex")
-
 

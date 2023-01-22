@@ -1,3 +1,10 @@
+Note
+============
+
+This is a fork of the library by Stone Hippo available `HERE <https://github.com/stonehippo/CircuitPython_Bela_Trill>`_.
+
+I made this fork to simplify some of the code and optimize it for my usage. I only have the Bela Trill Square so I can only test with that but it should work with the others, but if you have trouble let me know and I may be able to help. The example below should also work with the square sensor, unlike the original example.
+
 Introduction
 ============
 
@@ -18,19 +25,30 @@ This is easily achieved by downloading
 Usage Example
 =============
 
-Setting up a single Trill touch sensor is straightforward, when using the defualt I2C addresss and scan settings.
+Setting up a single Trill touch sensor is straightforward, when using the default I2C address's and scan settings.
 
 .. code-block:: python
 
   import board
   import time
+  import busio
   import bela_trill
+  import touch
 
-  trill_bar = bela_trill.Bar(board.I2C())
+  i2c = busio.I2C(board.PERIPHERAL_SCL, board.PERIPHERAL_SDA)
+
+  square = bela_trill.Square(i2c)
+  trill = touch.Touches(square)
 
   while True:
-    trill_bar.read()
-    for i in range(trill_bar.number_of_touches()):
-      touch = trill_bar.touches[i]
-      print(f"touch{i}: location_x: {touch.location_x} size: {touch.size")
-    time.sleep(0.05)
+    print("Total touches detected: " + str(trill.get_num()))
+    if trill.get_num != 0 :
+    # only need to run this if a touch is detected
+      print("Horizontal touches detected: " + str(trill.get_precise("h")))
+      print("Vertical touches detected: " + str(trill.get_precise("v")))
+      for i in range(trill.get_num()):
+        # subtract 1 due to indexing begging at 0
+        index = i - 1
+        print("Touch " + str(i) + " detected at " + str(trill.get_touch(index)))
+    time.sleep(0.5)
+    # the time is pretty high here for readability purposes.
