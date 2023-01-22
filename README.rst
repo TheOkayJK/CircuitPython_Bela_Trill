@@ -42,7 +42,7 @@ Setting up a single Trill touch sensor is straightforward, when using the defaul
 
   while True:
     print("Total touches detected: " + str(trill.get_num()))
-    if trill.get_num != 0 :
+    if int(trill.get_num()) >= 1 :
     # only need to run this if a touch is detected
       print("Horizontal touches detected: " + str(trill.get_precise("h")))
       print("Vertical touches detected: " + str(trill.get_precise("v")))
